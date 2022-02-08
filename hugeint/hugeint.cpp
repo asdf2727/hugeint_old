@@ -59,13 +59,13 @@ std::string hugeint::to_string() const {
 	bool sav, last, isnull;
 	calc.push_back(0);
 	isnull = true;
-	for (int index = bits.size() - 1; index >= 0; index--) {
+	for (size_t index = bits.size() - 1; index != 0xffffffff; index--) {
 		for (uint pos = 0x80000000; pos > 0; pos >>= 1) {
 			if (bits[index] & pos) {
-				for (int index2 = 0; index2 < (int)calc.size(); index2++) {
+				for (size_t index2 = 0; index2 < calc.size(); index2++) {
 					if (calc[index2] == 9) {
 						calc[index2] = 0;
-						if (index2 == (int)calc.size() - 1) {
+						if (index2 == calc.size() - 1) {
 							calc.push_back(1);
 							break;
 						}
@@ -79,7 +79,7 @@ std::string hugeint::to_string() const {
 			}
 			if ((index || pos != 1) && !isnull) {
 				sav = false;
-				for (int index2 = 0; index2 < (int)calc.size(); index2++) {
+				for (size_t index2 = 0; index2 < calc.size(); index2++) {
 					last = sav;
 					if (calc[index2] > 4) {
 						sav = true;
@@ -100,7 +100,7 @@ std::string hugeint::to_string() const {
 		}
 	}
 	std::string ans = "";
-	for (int index = calc.size() - 1; index >= 0; index--) {
+	for (size_t index = calc.size() - 1; index != 0xffffffff; index--) {
 		ans.push_back(calc[index] + '0');
 	}
 	return ans;
@@ -142,7 +142,7 @@ hugeint hugeint::operator~() const {
 	ullint sav = 1;
 	if (!bits.empty()) {
 		ans.bits.resize(bits.size());
-		for (int index = 0; index < (int)bits.size() - 1; index++) {
+		for (size_t index = 0; index < bits.size() - 1; index++) {
 			ans.bits[index] = ~bits[index];
 		}
 		for (int index = 16; index > 0; index >>= 1) {
@@ -158,7 +158,7 @@ hugeint hugeint::operator~() const {
 
 hugeint hugeint::operator&=(hugeint to_and) {
 	bits.resize(std::min(bits.size(), to_and.bits.size()));
-	for (int index = 0; index < (int)bits.size(); index++) {
+	for (size_t index = 0; index < bits.size(); index++) {
 		bits[index] &= to_and.bits[index];
 	}
 	while (!bits.empty() && bits.back() == 0) {
@@ -176,7 +176,7 @@ hugeint hugeint::operator|=(hugeint to_or) {
 	if (bits.size() < to_or.bits.size()) {
 		bits.resize(to_or.bits.size());
 	}
-	for (int index = 0; index < (int)to_or.bits.size(); index++) {
+	for (size_t index = 0; index < to_or.bits.size(); index++) {
 		bits[index] |= to_or.bits[index];
 	}
 	return (*this);
@@ -191,7 +191,7 @@ hugeint hugeint::operator^=(hugeint to_xor) {
 	if (bits.size() < to_xor.bits.size()) {
 		bits.resize(to_xor.bits.size());
 	}
-	for (int index = 0; index < (int)to_xor.bits.size(); index++) {
+	for (size_t index = 0; index < to_xor.bits.size(); index++) {
 		bits[index] ^= to_xor.bits[index];
 	}
 	while (!bits.empty() && bits.back() == 0) {
@@ -214,7 +214,7 @@ hugeint hugeint::operator<<=(llint val) {
 				uint part1 = (1ull << (32 - bitshift)) - 1;
 				uint part2 = 0xffffffff ^ part1;
 				bits.push_back(0);
-				for (int index = bits.size() - 1; index > 0; index--) {
+				for (size_t index = bits.size() - 1; index > 0; index--) {
 					bits[index] = ((bits[index] & part1) << bitshift) + ((bits[index - 1] & part2) >> (32 - bitshift));
 				}
 				bits[0] = (bits[0] & part1) << bitshift;
@@ -243,7 +243,7 @@ hugeint hugeint::operator>>=(llint val) {
 		if (!bits.empty() && bitshift) {
 			uint part1 = (1ull << (32 - bitshift)) - 1;
 			uint part2 = 0xffffffff ^ part1;
-			for (int index = 0; index < (int)bits.size() - 1; index++) {
+			for (size_t index = 0; index < bits.size() - 1; index++) {
 				bits[index] = ((bits[index] & part2) >> bitshift) + ((bits[index + 1] & part1) << (32 - bitshift));
 			}
 			bits.back() = (bits.back() & part2) >> bitshift;
@@ -271,7 +271,7 @@ bool hugeint::operator<=(hugeint to_comp) const {
 		return false;
 	}
 	else {
-		for (int index = bits.size() - 1; index >= 0; index--) {
+		for (size_t index = bits.size() - 1; index != 0xffffffff; index--) {
 			if (bits[index] != to_comp.bits[index]) {
 				return bits[index] < to_comp.bits[index];
 			}
@@ -290,7 +290,7 @@ bool hugeint::operator<(hugeint to_comp) const {
 		return false;
 	}
 	else {
-		for (int index = bits.size() - 1; index >= 0; index--) {
+		for (size_t index = bits.size() - 1; index != 0xffffffff; index--) {
 			if (bits[index] != to_comp.bits[index]) {
 				return bits[index] < to_comp.bits[index];
 			}
@@ -342,7 +342,7 @@ bool hugeint::operator||(uint to_comp) const {
 
 hugeint hugeint::operator++() {
 	bool mod = false;
-	for (int index = 0; index < (int)bits.size(); index++) {
+	for (size_t index = 0; index < bits.size(); index++) {
 		if (bits[index] == 0xffffffff) {
 			bits[index] = 0;
 		}
@@ -358,7 +358,7 @@ hugeint hugeint::operator++() {
 	return *this;
 }
 hugeint hugeint::operator--() {
-	for (int index = 0; index < (int)bits.size(); index++) {
+	for (size_t index = 0; index < bits.size(); index++) {
 		if (bits[index] == 0) {
 			bits[index] = 0xffffffff;
 		}
@@ -391,7 +391,7 @@ hugeint hugeint::operator+=(hugeint to_add) {
 		bits.resize(to_add.bits.size());
 	}
 	bool last, sav = false;
-	for (int index = 0; index < (int)bits.size(); index++) {
+	for (size_t index = 0; index < bits.size(); index++) {
 		last = sav;
 		sav = ((last ? 1ull : 0ull) + bits[index] + to_add.bits[index]) & 0x0000000100000000;
 		bits[index] = (uint)((last ? 1ull : 0ull) + bits[index] + to_add.bits[index]);
@@ -424,7 +424,7 @@ hugeint hugeint::operator-=(hugeint to_sub) {
 		bits.resize(to_sub.bits.size());
 	}
 	bool last, sav = false;
-	for (int index = 0; index < (int)bits.size(); index++) {
+	for (size_t index = 0; index < bits.size(); index++) {
 		last = sav;
 		sav = 0ll + bits[index] - to_sub.bits[index] - (last ? 1ll : 0ll) < 0ll;
 		bits[index] = (uint)((sav ? 0x0000000100000000ll : 0ll) + bits[index] - to_sub.bits[index] + (last ? 1ll : 0ll));
@@ -505,14 +505,14 @@ void MultiplicationDFT(std::vector <uint>& coef, int log_size, bool inverse = fa
 		return;
 	}
 	std::vector <uint> num[2];
-	for (int index = 0; index < coef.size(); index++) {
+	for (size_t index = 0; index < coef.size(); index++) {
 		num[index & 1].push_back(coef[index]);
 	}
 	MultiplicationDFT(num[0], log_size - 1, inverse);
 	MultiplicationDFT(num[1], log_size - 1, inverse);
 	ullint first_sol = MULT_SOL[MULT_SIZ - log_size];
 	ullint now_sol = 1, val;
-	for (int index = 0; index < coef.size(); index++) {
+	for (size_t index = 0; index < coef.size(); index++) {
 		val = now_sol;
 		//MultMod(val, num[1][index & ((coef.size() >> 1) - 1)]);
 		//val += num[0][index & ((coef.size() >> 1) - 1)];
@@ -529,34 +529,34 @@ void MultiplicationDFT(std::vector <uint>& coef, int log_size, bool inverse = fa
 }
 
 hugeint hugeint::operator*(hugeint to_mult) {
-	uint max_size = bits.size() + to_mult.bits.size() + 1;
+	size_t max_size = bits.size() + to_mult.bits.size() + 1;
 	int log_size = 0;
 	for (int index = 16; index > 0; index >>= 1) {
-		if (max_size >  1 << (log_size + index)) {
+		if (max_size > (1u << (log_size + index))) {
 			log_size += index;
 		}
 	}
 	log_size += 2;
 	max_size = 1 << log_size;
 	std::vector <uint> num1(max_size), num2(max_size);
-	for (int index = 0; index < bits.size(); index += 2) {
+	for (size_t index = 0; index < bits.size(); index += 2) {
 		num1[index] = bits[index] & 0x0000ffff;
 		num1[index + 1] = bits[index] >> 16;
 	}
-	for (int index = 0; index < to_mult.bits.size(); index += 2) {
+	for (size_t index = 0; index < to_mult.bits.size(); index += 2) {
 		num2[index] = to_mult.bits[index] & 0x0000ffff;
 		num2[index + 1] = to_mult.bits[index] >> 16;
 	}
 	MultiplicationDFT(num1, log_size);
 	MultiplicationDFT(num2, log_size);
-	for (int index = 0; index < max_size; index++) {
+	for (size_t index = 0; index < max_size; index++) {
 		num1[index] = ((ullint)num1[index] * num2[index]) % MULT_MOD;
 	}
 	MultiplicationDFT(num1, log_size, true);
 	hugeint ans;
 	ans.bits.resize(num1.size() >> 1);
 	ullint last = 0;
-	for (int index = 0; index < num1.size(); index += 2) {
+	for (size_t index = 0; index < num1.size(); index += 2) {
 		ans.bits[index >> 1] = (last + num1[index] + (num1[index + 1] << 16));
 		last = ((last + num1[index]) >> 16 + num1[index + 1]) >> 16;
 	}
@@ -575,7 +575,7 @@ hugeint hugeint::operator*=(hugeint to_mult) {
 }
 hugeint hugeint::operator*=(uint to_mult) {
 	ullint form = 0;
-	for (int index = 0; index < (int)bits.size(); index++) {
+	for (size_t index = 0; index < bits.size(); index++) {
 		form += (ullint)bits[index] * to_mult;
 		bits[index] = form & 0x00000000ffffffff;
 		form >>= 32;
@@ -602,7 +602,7 @@ uint DivBinSearch(hugeint& rest, hugeint to_div) {
 
 hugeint hugeint::operator/(hugeint to_div) {
 	hugeint calc, rest;
-	for (int index = bits.size() - 1; index >= 0; index--) {
+	for (size_t index = bits.size() - 1; index != 0xffffffff; index--) {
 		rest <<= 32;
 		rest += bits[index];
 		calc <<= 32;
@@ -624,7 +624,7 @@ hugeint hugeint::operator/=(uint to_div) {
 
 hugeint hugeint::operator%(hugeint to_div) {
 	hugeint rest;
-	for (int index = bits.size() - 1; index >= 0; index--) {
+	for (size_t index = bits.size() - 1; index != 0xffffffff; index--) {
 		rest <<= 32;
 		rest += bits[index];
 		if (to_div <= rest) {
